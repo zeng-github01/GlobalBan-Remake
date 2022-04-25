@@ -24,9 +24,9 @@ namespace GlobalBan.Database
 
         public void CheckSchema()
         {
-            databaseConnection.ExecuteQuery(true, $"CREATE TABLE IF NOT EXISTS `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` (`SteamID` BIGINT NOT NULL, `HWID` varchar(128) NOT NULL,`IP` INT NOT NULL, `BanOfTime` timestamp NULL ON UPDATE CURRENT_TIMESTAMP, `Reason` varchar(512), `Duration` INT NOT NULL,`IsUnbanned` BOOLEAN NOT NULL ,`ServerID` smallint(5) NOT NULL)");
+            databaseConnection.ExecuteQuery(true, $"CREATE TABLE IF NOT EXISTS `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` (`SteamID` BIGINT NOT NULL, `HWID` varchar(128) NOT NULL,`IP` INT UNSIGNED NOT NULL, `BanOfTime` timestamp NULL ON UPDATE CURRENT_TIMESTAMP, `Reason` varchar(512), `Duration` INT NOT NULL,`IsUnbanned` BOOLEAN NOT NULL ,`ServerID` smallint(5) NOT NULL)");
         }
-        public ExecuteResult BanPlayer(CSteamID cSteamID,int duration = 0,string reason = null)
+        public EExecuteQuery BanPlayer(CSteamID cSteamID,int duration = 0,string reason = null)
         {         
             var playerdata = PlayerInfoLib.Database.QueryById(cSteamID,false);
             try
@@ -35,42 +35,42 @@ namespace GlobalBan.Database
                 if(reason == null)
                 {
                     Provider.kick(cSteamID,GlobalBan.Instance.Configuration.Instance.DefaultBanMessage);
-                    return ExecuteResult.Sucessed;
+                    return EExecuteQuery.Sucessed;
                 }
                 else
                 {
                     Provider.kick(cSteamID,reason);
                 }
-                return ExecuteResult.Sucessed;
+                return EExecuteQuery.Sucessed;
             }
             catch(Exception ex)
             {
-                
+                Logger.LogException(ex);
             }
             
-            return ExecuteResult.Failure;
+            return EExecuteQuery.Failure;
 
         }
 
-        public ExecuteResult UnBanPlayer(CSteamID cSteamID)
+        public EExecuteQuery UnBanPlayer(CSteamID cSteamID)
         {
             try
             {
                 databaseConnection.ExecuteQuery(true, $"UPDATE `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}`SET `IsUnbanned` = '1' WHERE `SteamID`= '{cSteamID}';");
-                return ExecuteResult.Sucessed;
+                return EExecuteQuery.Sucessed;
             }
             catch (Exception ex)
             {
-
+                Logger.LogException(ex);
             }
-            return ExecuteResult.Failure;
+            return EExecuteQuery.Failure;
         }
         private BanPlayerData BuildBanPlayerData(MySqlDataReader reader)
         {
             return new BanPlayerData((CSteamID)reader.GetUInt64("SteamID"), reader.GetString("HWID"),Parser.getIPFromUInt32(reader.GetUInt32("IP")), reader.GetInt32("Duration"), reader.GetUInt16("ServerID"), reader.GetDateTime("BanOfTime"), reader.GetBoolean("IsUnbanned"),reader.GetString("Reason"));
         }
 
-        public BanPlayerData GetBanPlayerData(CSteamID cSteamID,BanSearchMode searchMode)
+        public BanPlayerData GetBanPlayerData(CSteamID cSteamID,EQueryType searchMode)
         {
             BanPlayerData playerData = null;
             try
@@ -79,16 +79,16 @@ namespace GlobalBan.Database
                 MySqlCommand command = connection.CreateCommand();
                 switch(searchMode)
                 {
-                    case BanSearchMode.SearchByID:
+                    case EQueryType.SearchByID:
                         command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `SteamID` = '{cSteamID}'";
                         break;
-                    case BanSearchMode.SearchByIP:
+                    case EQueryType.SearchByIP:
                         command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `IP` = '{Parser.getIPFromUInt32(Convert.ToUInt32(PlayerInfoLib.Database.QueryById(cSteamID).IP))}'";
                         break;
-                    case BanSearchMode.SearchByHWID:
+                    case EQueryType.SearchByHWID:
                         command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `HWID` = '{PlayerInfoLib.Database.QueryById(cSteamID).HWID}'";
                         break;
-                    case BanSearchMode.SearchByHWIDAndIP:  
+                    case EQueryType.SearchByHWIDAndIP:  
                         command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `IP` = '{Parser.getIPFromUInt32(Convert.ToUInt32(PlayerInfoLib.Database.QueryById(cSteamID).IP))}' AND `HWID` = '{PlayerInfoLib.Database.QueryById(cSteamID).HWID}'";
                         break;
                 }

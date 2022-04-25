@@ -27,8 +27,10 @@ namespace GlobalBan
             Instance = this;
             database = new Database.DatabaseManager();
             U.Events.OnBeforePlayerConnected += Events_OnBeforePlayerConnected;
+            //U.Events.OnPlayerConnected += Events_OnPlayerConnected;
             Logger.Log($"{Name} has been loaded");
         }
+
 
         private void Events_OnBeforePlayerConnected(UnturnedPlayer player)
         {
@@ -50,13 +52,14 @@ namespace GlobalBan
             }
             catch (Exception ex)
             {
-
+                Logger.LogException(ex);
             }
         }
 
         protected override void Unload()
         {
             U.Events.OnBeforePlayerConnected -= Events_OnBeforePlayerConnected;
+           //U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
             Logger.Log($"{Name} has been unloaded");
         }
         private void Events_OnPlayerConnected(UnturnedPlayer player)
@@ -69,25 +72,29 @@ namespace GlobalBan
                     {
                         Provider.kick(player.CSteamID, reason);
                         BannedReason.Remove(player);
-
                     }
                 }
             }
             catch(Exception ex)
             {
-                
+                Logger.LogException(ex);
             }
         }
 
-        internal bool CheckIfBanned(UnturnedPlayer player)
+        public static bool CheckIfBanned(UnturnedPlayer player)
         {
             bool banned = false;
-            foreach (BanSearchMode mode in Enum.GetValues(typeof(BanSearchMode)))
+            foreach (EQueryType mode in Enum.GetValues(typeof(EQueryType)))
             {
-                if(!GlobalBan.Instance.Configuration.Instance.BanIPandHWID && mode == BanSearchMode.SearchByHWIDAndIP)
+                if(!GlobalBan.Instance.Configuration.Instance.BanIPandHWID && mode == EQueryType.SearchByHWIDAndIP)
                 {
                     continue;
                 }
+                else if(GlobalBan.Instance.Configuration.Instance.BanIPandHWID && (mode == EQueryType.SearchByIP || mode == EQueryType.SearchByHWID))
+                {
+                    continue;
+                }
+
                 var bandata = database.GetBanPlayerData(player.CSteamID, mode);
                 if(bandata != null)
                 {
@@ -98,13 +105,13 @@ namespace GlobalBan
                     }
                     else
                     {
-                        if (!BannedReason.ContainsKey(player))
+                        if (!GlobalBan.Instance.BannedReason.ContainsKey(player))
                         {
-                            if (bandata.Reason != "")
+                            if (bandata.Reason != string.Empty)
                             {
-                                BannedReason.Add(player, bandata.Reason);
+                               Instance.BannedReason.Add(player, bandata.Reason);
                             }
-                            BannedReason.Add(player, Configuration.Instance.DefaultBanMessage);
+                            Instance.BannedReason.Add(player,Instance.Configuration.Instance.DefaultBanMessage);
                         }
                         banned = true;
                         break;

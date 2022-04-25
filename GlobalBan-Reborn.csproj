@@ -111,7 +111,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\Enum\ExecuteResult.cs" />
+    <Compile Include="API\Enum\EExecuteQuery.cs" />
     <Compile Include="API\IGlobalBan.cs" />
     <Compile Include="Commands\BanCommand.cs" />
     <Compile Include="Commands\UnbanCommand.cs" />
@@ -119,7 +119,7 @@
     <Compile Include="Database\DatabaseConnection.cs" />
     <Compile Include="Database\DatabaseManager.cs" />
     <Compile Include="API\BanPlayerData.cs" />
-    <Compile Include="API\Enum\BanSearchMode.cs" />
+    <Compile Include="API\Enum\EQueryType.cs" />
     <Compile Include="GlobalBan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

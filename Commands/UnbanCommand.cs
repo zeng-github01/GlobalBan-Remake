@@ -29,7 +29,7 @@ namespace GlobalBan.Commands
                 {
                     var unbanedplayer = new Steamworks.CSteamID(steamid);
                    var unbanresult = GlobalBan.database.UnBanPlayer(unbanedplayer);
-                    if(unbanresult == API.Enum.ExecuteResult.Sucessed)
+                    if(unbanresult == API.Enum.EExecuteQuery.Sucessed)
                     {
                         UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_unbanned"));
                     }

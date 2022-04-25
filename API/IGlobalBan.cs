@@ -11,11 +11,11 @@ namespace GlobalBan.API
 {
     public interface IGlobalBan
     {
-         ExecuteResult BanPlayer(CSteamID cSteamID, int duration, string reason);
+         EExecuteQuery BanPlayer(CSteamID cSteamID, int duration, string reason);
 
-        ExecuteResult UnBanPlayer(CSteamID cSteam);
+        EExecuteQuery UnBanPlayer(CSteamID cSteam);
 
-        BanPlayerData GetBanPlayerData(CSteamID cSteamID,BanSearchMode searchMode);
+        BanPlayerData GetBanPlayerData(CSteamID cSteamID,EQueryType searchMode);
 
     }
 }
