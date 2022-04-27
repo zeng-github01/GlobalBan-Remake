@@ -30,6 +30,8 @@ namespace GlobalBan.Database
             {
                 databaseConnection.ExecuteQuery(true,
                 $"ALTER TABLE `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` ADD `Admin` VARCHAR(32) NOT NULL;");
+                databaseConnection.ExecuteQuery(true,
+                    $"ALTER TABLE `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` ADD primary key (`SteamID`);");
                 GlobalBan.Instance.Configuration.Instance.TableVersion = 2;
                 GlobalBan.Instance.Configuration.Save();
             }
