@@ -54,7 +54,7 @@ namespace GlobalBan.Database
             }
             catch(Exception ex)
             {
-                Logger.LogException(ex,"在存储数据时发生错误");
+                Logger.LogException(ex);
             }
             
             return EExecuteQuery.Failure;
