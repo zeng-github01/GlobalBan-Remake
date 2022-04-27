@@ -59,7 +59,8 @@ namespace GlobalBan
         protected override void Unload()
         {
             U.Events.OnBeforePlayerConnected -= Events_OnBeforePlayerConnected;
-           //U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
+            //U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
+            BannedReason.Clear();
             Logger.Log($"{Name} has been unloaded");
         }
         private void Events_OnPlayerConnected(UnturnedPlayer player)
@@ -98,20 +99,37 @@ namespace GlobalBan
                 var bandata = database.GetBanPlayerData(player.CSteamID, mode);
                 if(bandata != null)
                 {
-                    if (bandata.IsUnbanned || (bandata.Duration != 0 && bandata.BanOfTime.AddSeconds(bandata.Duration) > DateTime.Now))
+                    if (bandata.IsUnbanned || (bandata.Duration > 0 && bandata.BanOfTime.AddSeconds(bandata.Duration) < DateTime.Now))
                     {
                         banned = false;
                         break;
                     }
-                    else
+                    else if(!bandata.IsUnbanned ||(bandata.Duration > 0 && bandata.BanOfTime.AddSeconds(bandata.Duration) > DateTime.Now))
                     {
                         if (!GlobalBan.Instance.BannedReason.ContainsKey(player))
                         {
                             if (bandata.Reason != string.Empty)
                             {
-                               Instance.BannedReason.Add(player, bandata.Reason);
+                                if (Instance.BannedReason.ContainsKey(player))
+                                {
+                                    Instance.BannedReason.Remove(player);
+                                    Instance.BannedReason.Add(player, bandata.Reason);
+                                }
+                                else
+                                {
+                                    Instance.BannedReason.Add(player, bandata.Reason);
+                                }
                             }
-                            Instance.BannedReason.Add(player,Instance.Configuration.Instance.DefaultBanMessage);
+                            if (!Instance.BannedReason.ContainsKey(player))
+                            {
+                                Instance.BannedReason.Add(player, Instance.Configuration.Instance.DefaultBanMessage);
+                            }
+                            else
+                            {
+                                Instance.BannedReason.Remove(player);
+                                Instance.BannedReason.Add(player, bandata.Reason);
+                            }
+
                         }
                         banned = true;
                         break;

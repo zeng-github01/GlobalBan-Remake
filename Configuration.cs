@@ -9,6 +9,7 @@ namespace GlobalBan
 {
     public class Configuration : IRocketPluginConfiguration
     {
+        public int TableVersion;
         public string DatabaseAddress;
         public string DatabaseUserName;
         public string DatabasePassword;
@@ -19,6 +20,7 @@ namespace GlobalBan
         public string DefaultBanMessage;
         public void LoadDefaults()
         {
+            TableVersion = 2;
             DatabaseAddress = "127.0.0.1";
             DatabaseUserName = "root";
             DatabasePassword = "password";
