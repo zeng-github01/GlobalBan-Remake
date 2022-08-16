@@ -87,9 +87,10 @@ namespace GlobalBan.Database
         public BanPlayerData GetBanPlayerData(CSteamID cSteamID,EQueryType searchMode)
         {
             BanPlayerData playerData = null;
+            MySqlConnection connection = databaseConnection.CreateConnection();
             try
             {
-                MySqlConnection connection =databaseConnection.CreateConnection();
+
                 MySqlCommand command = connection.CreateCommand();
                 switch(searchMode)
                 {
@@ -103,21 +104,23 @@ namespace GlobalBan.Database
                         command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `HWID` = '{PlayerInfoLib.Database.QueryById(cSteamID).HWID}'";
                         break;
                     case EQueryType.SearchByHWIDAndIP:  
-                        command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `IP` = '{PlayerInfoLib.Database.QueryById(cSteamID).IP}' AND `HWID` = '{PlayerInfoLib.Database.QueryById(cSteamID).HWID}'";
+                        command.CommandText = $"SELECT * from `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` where `IP` = '{PlayerInfoLib.Database.QueryById(cSteamID).IP}' OR `HWID` = '{PlayerInfoLib.Database.QueryById(cSteamID).HWID}'";
                         break;
                 }
-                
                 connection.Open();
                 MySqlDataReader reader = command.ExecuteReader();
                 if(reader.Read())
                 {
                     playerData = BuildBanPlayerData(reader);
                 }
-                connection.Close();
             }
             catch (Exception ex)
             {
                 Logger.LogException(ex);
+            }
+            finally
+            {
+                connection.Close();
             }
             return playerData;
         }
@@ -125,7 +128,7 @@ namespace GlobalBan.Database
         internal void SaveToDB(BanPlayerData banPlayerData)
         {
             databaseConnection.ExecuteQuery(true, 
-            $"INSERT INTO `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` (SteamID,HWID,IP,BanOfTime,Duration,Reason,IsUnbanned,Admin,ServerID) values('{banPlayerData.CSteamID}','{banPlayerData.HWID}','{Parser.getUInt32FromIP(banPlayerData.IP)}','{DateTime.Now}','{banPlayerData.Duration}','{banPlayerData.Reason}',{banPlayerData.IsUnbanned},'{banPlayerData.AdminID}','{banPlayerData.ServerID}') ON DUPLICATE KEY UPDATE `SteamID` = VALUES(`SteamID`), `HWID` = VALUES(`HWID`), `IP` = VALUES(`IP`), `BanOfTime` = VALUES(`BanOfTime`), `Duration` = VALUES(`Duration`), `Reason` = VALUES(`Reason`), `IsUnbanned` = VALUES(`IsUnbanned`), `Admin` = VALUES(`Admin`),  `ServerID` = VALUES(`ServerID`)");
+            $"INSERT INTO `{GlobalBan.Instance.Configuration.Instance.DatabaseTableName}` (SteamID,HWID,IP,BanOfTime,Duration,Reason,IsUnbanned,Admin,ServerID) values('{banPlayerData.CSteamID}','{banPlayerData.HWID}','{Parser.getUInt32FromIP(banPlayerData.IP)}','{banPlayerData.BanOfTime}','{banPlayerData.Duration}','{banPlayerData.Reason}',{banPlayerData.IsUnbanned},'{banPlayerData.AdminID}','{banPlayerData.ServerID}') ON DUPLICATE KEY UPDATE `SteamID` = VALUES(`SteamID`), `HWID` = VALUES(`HWID`), `IP` = VALUES(`IP`), `BanOfTime` = VALUES(`BanOfTime`), `Duration` = VALUES(`Duration`), `Reason` = VALUES(`Reason`), `IsUnbanned` = VALUES(`IsUnbanned`), `Admin` = VALUES(`Admin`),  `ServerID` = VALUES(`ServerID`)");
         }
     }
 }
