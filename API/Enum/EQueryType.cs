@@ -10,7 +10,6 @@ namespace GlobalBan.API.Enum
     {
        SearchByID,
        SearchByIP,
-       SearchByHWID,
-       SearchByHWIDAndIP
+       SearchByHWID
     }
 }

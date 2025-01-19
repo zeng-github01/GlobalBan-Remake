@@ -16,7 +16,6 @@ namespace GlobalBan
         public string DatabaseName;
         public int DatabasePort;
         public string DatabaseTableName;
-        public bool BanIPandHWID;
         public string DefaultBanMessage;
         public void LoadDefaults()
         {
@@ -27,7 +26,6 @@ namespace GlobalBan
             DatabaseName = "unturned";
             DatabasePort = 3306;
             DatabaseTableName = "GlobalBan";
-            BanIPandHWID = true;
             DefaultBanMessage = "You have been banned from this server";
         }
     }

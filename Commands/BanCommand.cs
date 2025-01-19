@@ -8,6 +8,7 @@ using Rocket.Unturned.Player;
 using Steamworks;
 using Rocket.Unturned.Chat;
 using PlayerInfoLibrary;
+using Rocket.Core.Logging;
 
 namespace GlobalBan.Commands
 {
@@ -31,12 +32,13 @@ namespace GlobalBan.Commands
             {
                 if (Extensions.isCSteamID(args[0],out CSteamID cSteamID))
                 {
-                    var exere = GlobalBan.database.BanPlayer(caller.Id,cSteamID);
-                    if (exere == API.Enum.EExecuteQuery.Sucessed)
+                    var banPlayer = GlobalBan.database.BanPlayer(cSteamID);
+                    if (banPlayer != null)
                     {
                         UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                        Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                     }
-                    else if (exere == API.Enum.EExecuteQuery.Failure)
+                    else
                     {
                         UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                     }
@@ -46,12 +48,13 @@ namespace GlobalBan.Commands
                     var banplayer = UnturnedPlayer.FromName(args[0]);
                     if (banplayer != null)
                     {
-                        var exere = GlobalBan.database.BanPlayer(caller.Id,banplayer.CSteamID);
-                        if (exere == API.Enum.EExecuteQuery.Sucessed)
+                        var banPlayer = GlobalBan.database.BanPlayer(banplayer.CSteamID);
+                        if (banPlayer != null)
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                            Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                         }
-                        else if (exere == API.Enum.EExecuteQuery.Failure)
+                        else
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                         }
@@ -62,26 +65,28 @@ namespace GlobalBan.Commands
             {
                 if (Extensions.isCSteamID(args[0], out CSteamID cSteamID ))
                 {
-                    if (uint.TryParse(args[1], out uint duration))
+                    if (int.TryParse(args[1], out int duration))
                     {
-                        var exere = GlobalBan.database.BanPlayer(caller.Id,cSteamID,duration);
-                        if (exere == API.Enum.EExecuteQuery.Sucessed)
+                        var banPlayer = GlobalBan.database.BanPlayer(cSteamID,duration);
+                        if (banPlayer != null)
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                            Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                         }
-                        else if (exere == API.Enum.EExecuteQuery.Failure)
+                        else
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                         }
                     }
                     else
                     {
-                        var exere = GlobalBan.database.BanPlayer(caller.Id,cSteamID,0,args[1]);
-                        if (exere == API.Enum.EExecuteQuery.Sucessed)
+                        var banPlayer = GlobalBan.database.BanPlayer(cSteamID,0,args[1]);
+                        if (banPlayer != null)
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                            Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                         }
-                        else if (exere == API.Enum.EExecuteQuery.Failure)
+                        else
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                         }
@@ -92,26 +97,28 @@ namespace GlobalBan.Commands
                     var banplayer = UnturnedPlayer.FromName(args[0]);
                     if (banplayer != null)
                     {
-                        if (uint.TryParse(args[1], out uint duration))
+                        if (int.TryParse(args[1], out int duration))
                         {
-                            var exere = GlobalBan.database.BanPlayer(caller.Id,banplayer.CSteamID, duration);
-                            if (exere == API.Enum.EExecuteQuery.Sucessed)
+                            var banPlayer = GlobalBan.database.BanPlayer(banplayer.CSteamID, duration);
+                            if (banPlayer != null)
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                                Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                             }
-                            else if (exere == API.Enum.EExecuteQuery.Failure)
+                            else
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                             }
                         }
                         else
                         {
-                            var exere = GlobalBan.database.BanPlayer(caller.Id,banplayer.CSteamID, 0,args[1]);
-                            if (exere == API.Enum.EExecuteQuery.Sucessed)
+                            var banPlayer = GlobalBan.database.BanPlayer(banplayer.CSteamID, 0);
+                            if (banPlayer != null)
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                                Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                             }
-                            else if (exere == API.Enum.EExecuteQuery.Failure)
+                            else
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                             }
@@ -123,14 +130,15 @@ namespace GlobalBan.Commands
             {
                 if (Extensions.isCSteamID(args[0],out CSteamID cSteamID))
                 {
-                    if (uint.TryParse(args[1], out uint duration))
+                    if (int.TryParse(args[1], out int duration))
                     {
-                        var exere = GlobalBan.database.BanPlayer(caller.Id,cSteamID, duration, args[2]);
-                        if (exere == API.Enum.EExecuteQuery.Sucessed)
+                        var banPlayer = GlobalBan.database.BanPlayer(cSteamID, duration, args[2]);
+                        if (banPlayer != null)
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                            Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                         }
-                        else if (exere == API.Enum.EExecuteQuery.Failure)
+                        else
                         {
                             UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                         }
@@ -141,24 +149,21 @@ namespace GlobalBan.Commands
                     var banplayer = UnturnedPlayer.FromName(args[0]);
                     if (banplayer != null)
                     {
-                        if (uint.TryParse(args[1], out uint duration))
+                        if (int.TryParse(args[1], out int duration))
                         {
-                            var exere = GlobalBan.database.BanPlayer(caller.Id,banplayer.CSteamID, duration, args[2]);
-                            if (exere == API.Enum.EExecuteQuery.Sucessed)
+                            var banPlayer = GlobalBan.database.BanPlayer(banplayer.CSteamID, duration, args[2]);
+                            if (banPlayer != null)
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("player_banned"));
+                                Logger.Log($"({cSteamID.m_SteamID}) was banned by Admin {caller.DisplayName} ({caller.Id})");
                             }
-                            else if (exere == API.Enum.EExecuteQuery.Failure)
+                            else
                             {
                                 UnturnedChat.Say(caller, GlobalBan.Instance.Translate("error_occured"), UnityEngine.Color.red);
                             }
                         }
                     }
                 }
-            }
-            else
-            {
-
             }
         }
     }

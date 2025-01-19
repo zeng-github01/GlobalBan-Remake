@@ -14,123 +14,61 @@ using SDG.Unturned;
 using UnityEngine;
 using Logger = Rocket.Core.Logging.Logger;
 using GlobalBan.API.Enum;
+using GlobalBan.API;
+using Rocket.Unturned.Permissions;
+using Steamworks;
 
 namespace GlobalBan
 {
     public class GlobalBan :RocketPlugin<Configuration>
     {
         public static GlobalBan Instance;
-        public Dictionary<UnturnedPlayer, string> BannedReason = new Dictionary<UnturnedPlayer, string>();
+        //public Dictionary<UnturnedPlayer, string> BannedReason = new Dictionary<UnturnedPlayer, string>();
         public static Database.DatabaseManager database;
         protected override void Load()
         {
             Instance = this;
             database = new Database.DatabaseManager();
-            U.Events.OnBeforePlayerConnected += Events_OnBeforePlayerConnected;
-            //U.Events.OnPlayerConnected += Events_OnPlayerConnected;
+            U.Events.OnPlayerConnected += Events_OnPlayerConnected;
             Logger.Log($"{Name} has been loaded");
         }
 
-
-        private void Events_OnBeforePlayerConnected(UnturnedPlayer player)
+        private void Events_OnPlayerConnected(UnturnedPlayer player)
         {
-            try
+            if (CheckIfBanned(player.CSteamID, out BanPlayerData banPlayerData))
             {
-                if (CheckIfBanned(player))
+                if (!string.IsNullOrEmpty(banPlayerData.Reason))
                 {
-                    if (BannedReason.TryGetValue(player, out string reason))
-                    {
-                        Provider.kick(player.CSteamID, reason);
-                        BannedReason.Remove(player);
-
-                    }
-                    else
-                    {
-                        Provider.kick(player.CSteamID, GlobalBan.Instance.Configuration.Instance.DefaultBanMessage);
-                    }
+                    Provider.kick(player.CSteamID, banPlayerData.Reason);
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex);
+                else
+                {
+                    Provider.kick(player.CSteamID, Configuration.Instance.DefaultBanMessage);
+                }
             }
         }
 
         protected override void Unload()
         {
-            U.Events.OnBeforePlayerConnected -= Events_OnBeforePlayerConnected;
-            //U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
-            BannedReason.Clear();
+            U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
             Logger.Log($"{Name} has been unloaded");
         }
-        private void Events_OnPlayerConnected(UnturnedPlayer player)
-        {
-            try
-            {
-                if (CheckIfBanned(player))
-                {
-                    if (BannedReason.TryGetValue(player, out string reason))
-                    {
-                        Provider.kick(player.CSteamID, reason);
-                        BannedReason.Remove(player);
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                Logger.LogException(ex);
-            }
-        }
 
-        public static bool CheckIfBanned(UnturnedPlayer player)
+        public static bool CheckIfBanned(CSteamID cSteamID,out BanPlayerData banPlayerData)
         {
             bool banned = false;
+            banPlayerData = null;
             foreach (EQueryType mode in Enum.GetValues(typeof(EQueryType)))
             {
-                if(!GlobalBan.Instance.Configuration.Instance.BanIPandHWID && mode == EQueryType.SearchByHWIDAndIP)
+                banPlayerData = database.GetBanPlayerData(cSteamID, mode);
+                if(banPlayerData != null)
                 {
-                    continue;
-                }
-                else if(GlobalBan.Instance.Configuration.Instance.BanIPandHWID && (mode == EQueryType.SearchByIP || mode == EQueryType.SearchByHWID))
-                {
-                    continue;
-                }
-
-                var bandata = database.GetBanPlayerData(player.CSteamID, mode);
-                if(bandata != null)
-                {
-                    if (bandata.IsUnbanned || (bandata.Duration > 0 && bandata.BanOfTime.AddSeconds(bandata.Duration) < DateTime.Now))
+                    if (banPlayerData.IsUnbanned || (banPlayerData.Duration > 0 && banPlayerData.BanOfTime.AddSeconds(banPlayerData.Duration) < DateTime.Now))
                     {
-                        banned = false;
                         break;
                     }
-                    else if(!bandata.IsUnbanned ||(bandata.Duration > 0 && bandata.BanOfTime.AddSeconds(bandata.Duration) > DateTime.Now))
+                    else if(!banPlayerData.IsUnbanned ||(banPlayerData.Duration > 0 && banPlayerData.BanOfTime.AddSeconds(banPlayerData.Duration) > DateTime.Now))
                     {
-                        if (!GlobalBan.Instance.BannedReason.ContainsKey(player))
-                        {
-                            if (bandata.Reason != string.Empty)
-                            {
-                                if (Instance.BannedReason.ContainsKey(player))
-                                {
-                                    Instance.BannedReason.Remove(player);
-                                    Instance.BannedReason.Add(player, bandata.Reason);
-                                }
-                                else
-                                {
-                                    Instance.BannedReason.Add(player, bandata.Reason);
-                                }
-                            }
-                            if (!Instance.BannedReason.ContainsKey(player))
-                            {
-                                Instance.BannedReason.Add(player, Instance.Configuration.Instance.DefaultBanMessage);
-                            }
-                            else
-                            {
-                                Instance.BannedReason.Remove(player);
-                                Instance.BannedReason.Add(player, bandata.Reason);
-                            }
-
-                        }
                         banned = true;
                         break;
                     }

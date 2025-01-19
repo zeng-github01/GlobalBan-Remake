@@ -1,4 +1,4 @@
-﻿using System;
+﻿  using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ namespace GlobalBan.API
 {
     public interface IGlobalBan
     {
-         EExecuteQuery BanPlayer(CSteamID cSteamID, int duration, string reason);
+         BanPlayerData BanPlayer(CSteamID cSteamID, int duration, string reason);
 
         EExecuteQuery UnBanPlayer(CSteamID cSteam);
 

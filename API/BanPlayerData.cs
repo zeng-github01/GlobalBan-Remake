@@ -11,14 +11,14 @@ namespace GlobalBan.API
     public class BanPlayerData
     {
         public CSteamID CSteamID;
-        public string HWID;
+        public List<string> HWID;
         public string IP;
         public int Duration;
         public int ServerID;
         public DateTime BanOfTime;
         public bool IsUnbanned;
         public string Reason;
-        internal BanPlayerData(CSteamID cSteamID,string hwid,string ip,int duration,int serverid,DateTime dateTime,bool isunbaned,string reason)
+        internal BanPlayerData(CSteamID cSteamID,List<string> hwid,string ip,int duration,int serverid,DateTime dateTime,bool isunbaned,string reason)
         {
             CSteamID = cSteamID;
             HWID = hwid;
